@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Type Rush Racing | Multiplayer Real-time Speed Battle</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:ital,wght@0,400;0,600;0,700;1,700&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <!-- Background Ambient Glow & Grid -->
+  <div class="bg-grid"></div>
+  <div class="bg-glow"></div>
+
+  <!-- Main Container -->
+  <div id="app" class="app-container">
+    
+    <!-- Top Navigation Bar -->
+    <header class="top-nav">
+      <div class="brand">
+        <span class="brand-icon">🏎️</span>
+        <span class="brand-title">TYPE<span class="highlight">RUSH</span> RACING</span>
+      </div>
+
+      <div id="room-pin-display" class="room-pin-badge hidden" title="Click to copy Room PIN">
+        <span class="pin-label">ROOM PIN:</span>
+        <span id="nav-pin-value" class="pin-value">----</span>
+        <button id="copy-pin-btn" class="icon-btn" title="Copy Room PIN">📋</button>
+      </div>
+
+      <div class="nav-controls">
+        <button id="sound-toggle-btn" class="icon-btn sound-btn" title="Toggle Sound">🔊</button>
+        <div id="connection-status" class="status-pill online">
+          <span class="dot"></span> Online
+        </div>
+      </div>
+    </header>
+
+    <!-- SCREEN 1: WELCOME & ROOM CREATION/JOIN -->
+    <main id="screen-welcome" class="screen active">
+      <div class="welcome-grid">
+        
+        <!-- Driver Profile & Car Customization -->
+        <section class="card profile-card">
+          <h2 class="card-title"><span class="title-icon">👤</span> DRIVER SETUP</h2>
+          
+          <div class="form-group">
+            <label for="player-name-input">Racer Name</label>
+            <input type="text" id="player-name-input" maxlength="15" placeholder="Enter your racer name..." autocomplete="off" spellcheck="false" value="SpeedRacer">
+          </div>
+
+          <div class="form-group">
+            <label>Car Model</label>
+            <div id="car-style-selector" class="style-selector-grid">
+              <!-- Dynamically populated by JS -->
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Paint Color</label>
+            <div id="car-color-selector" class="color-palette">
+              <!-- Dynamically populated by JS -->
+            </div>
+          </div>
+
+          <!-- Live Car Preview -->
+          <div class="preview-stage">
+            <div class="speed-lines"></div>
+            <div id="car-preview-container" class="car-preview">
+              <!-- Rendered Car SVG -->
+            </div>
+          </div>
+        </section>
+
+        <!-- Room Action Options -->
+        <section class="card action-card">
+          <h2 class="card-title"><span class="title-icon">🏁</span> ENTER RACE</h2>
+
+          <!-- Tab Selector -->
+          <div class="action-tabs">
+            <button id="tab-create" class="tab-btn active">CREATE ROOM</button>
+            <button id="tab-join" class="tab-btn">JOIN WITH PIN</button>
+          </div>
+
+          <!-- Create Room View -->
+          <div id="pane-create" class="action-pane active">
+            <div class="action-info">
+              <p>Host a real-time typing battle room with a unique <strong>4-digit PIN</strong>. Invite your friends or battle with anyone!</p>
+              <ul class="feature-list">
+                <li>✨ Instant 4-digit code generation</li>
+                <li>⚡ Real-time track progress & live WPM</li>
+                <li>🏆 Podium & detailed race leaderboard</li>
+              </ul>
+            </div>
+            <button id="btn-create-room" class="btn btn-primary btn-glow">
+              <span>CREATE ROOM</span> 🚀
+            </button>
+          </div>
+
+          <!-- Join Room View -->
+          <div id="pane-join" class="action-pane">
+            <div class="action-info">
+              <p>Enter the <strong>4-digit room PIN</strong> shared by the room host to join the starting grid:</p>
+            </div>
+
+            <div class="pin-input-container">
+              <input type="text" class="pin-digit" maxlength="1" inputmode="numeric" pattern="[0-9]*" autofocus>
+              <input type="text" class="pin-digit" maxlength="1" inputmode="numeric" pattern="[0-9]*">
+              <input type="text" class="pin-digit" maxlength="1" inputmode="numeric" pattern="[0-9]*">
+              <input type="text" class="pin-digit" maxlength="1" inputmode="numeric" pattern="[0-9]*">
+            </div>
+
+            <button id="btn-join-room" class="btn btn-secondary btn-glow">
+              <span>JOIN ROOM</span> 🏁
+            </button>
+          </div>
+        </section>
+
+      </div>
+    </main>
+
+    <!-- SCREEN 2: WAITING LOBBY -->
+    <main id="screen-lobby" class="screen">
+      <div class="lobby-container">
+        
+        <!-- Big PIN Share Banner -->
+        <div class="lobby-header-card">
+          <div class="pin-hero">
+            <span class="pin-hero-sub">SHARE 4-DIGIT PIN TO JOIN</span>
+            <div class="pin-hero-code" id="lobby-pin-display">0000</div>
+            <button id="lobby-copy-btn" class="btn btn-small btn-outline">
+              📋 Copy PIN
+            </button>
+          </div>
+          <div class="lobby-meta">
+            <div class="meta-tag"><span id="lobby-player-count">1</span> / 8 Racers</div>
+            <div class="meta-tag" id="lobby-role-tag">Host</div>
+          </div>
+        </div>
+
+        <!-- Racers Grid in Lobby -->
+        <section class="card racers-card">
+          <h3 class="card-subtitle">RACERS ON THE GRID</h3>
+          <div id="lobby-players-grid" class="lobby-players-grid">
+            <!-- Player Cards rendered dynamically -->
+          </div>
+        </section>
+
+        <!-- Lobby Controls -->
+        <div class="lobby-actions-bar">
+          <button id="btn-leave-lobby" class="btn btn-outline">LEAVE ROOM</button>
+          <div id="host-controls">
+            <button id="btn-start-race" class="btn btn-primary btn-glow">
+              <span>START RACE</span> 🚦
+            </button>
+          </div>
+          <div id="guest-waiting-msg" class="waiting-indicator hidden">
+            <div class="spinner"></div> Waiting for host to start the race...
+          </div>
+        </div>
+
+      </div>
+    </main>
+
+    <!-- SCREEN 3: RACE TRACK ARENA -->
+    <main id="screen-race" class="screen">
+      
+      <!-- Live Race HUD -->
+      <div class="race-hud">
+        <div class="hud-item hud-position">
+          <span class="hud-label">POSITION</span>
+          <span id="hud-my-rank" class="hud-val">1st</span>
+        </div>
+        <div class="hud-item hud-speedometer">
+          <span class="hud-label">SPEED</span>
+          <span id="hud-my-wpm" class="hud-val highlight">0 <small>WPM</small></span>
+        </div>
+        <div class="hud-item hud-accuracy">
+          <span class="hud-label">ACCURACY</span>
+          <span id="hud-my-accuracy" class="hud-val">100%</span>
+        </div>
+        <div class="hud-item hud-prompt-name">
+          <span class="hud-label">TRACK</span>
+          <span id="hud-track-title" class="hud-val">Turbo Charged</span>
+        </div>
+        <div id="hud-grace-timer" class="hud-item hud-grace hidden">
+          <span class="hud-label">RACE CLOSES IN</span>
+          <span id="hud-grace-seconds" class="hud-val text-danger">15s</span>
+        </div>
+      </div>
+
+      <!-- Overhead Race Radar / Distance Gap Tracker -->
+      <div class="race-radar-card">
+        <div class="radar-header">
+          <span class="radar-title">🛰️ RACE RADAR &amp; DISTANCE GAP</span>
+          <span class="radar-flag">🏁 100%</span>
+        </div>
+        <div class="radar-track-bar">
+          <div class="radar-start-line"></div>
+          <div id="radar-dots-container" class="radar-dots-container">
+            <!-- Dynamic mini dots for each racer -->
+          </div>
+          <div class="radar-finish-gate"></div>
+        </div>
+      </div>
+
+      <!-- Final Stretch Alert Banner -->
+      <div id="finish-alert-banner" class="finish-alert-banner hidden">
+        ⚡ FINAL STRETCH! FINISH LINE IN SIGHT! 🏁
+      </div>
+
+      <!-- Race Track Arena -->
+      <div class="race-track-wrapper">
+        <!-- Track Top Curb & Pit Wall Distance Markers -->
+        <div class="track-distance-board">
+          <span class="dist-sign start-sign">🏁 STARTING GRID</span>
+          <span class="dist-sign">300M</span>
+          <span class="dist-sign">200M</span>
+          <span class="dist-sign">100M</span>
+          <span class="dist-sign">50M</span>
+          <span class="dist-sign gate-sign">APEX GATE ⚡</span>
+        </div>
+        <div class="track-curb track-curb-top"></div>
+
+        <!-- Multi-Lane Highway with Grid Markings -->
+        <div id="race-track-lanes" class="race-track-lanes">
+          <!-- Dynamic lanes for all racers -->
+        </div>
+
+        <!-- Track Bottom Rumble Curb -->
+        <div class="track-curb track-curb-bottom"></div>
+
+        <!-- Dynamic Laser Finish Line Banner -->
+        <div id="finish-line-banner" class="finish-line-banner hidden-line">
+          <div class="finish-laser-gate"></div>
+          <div class="checkered-strip"></div>
+          <span class="finish-text">FINISH</span>
+        </div>
+      </div>
+
+      <!-- Type Rush Natural Line Typing Arena -->
+      <div class="typing-arena-card">
+        <div class="typing-header">
+          <div class="typing-title-group">
+            <span class="typing-title">⌨️ RACE SENTENCE (MONKEYTYPE SPEED TEST)</span>
+            <span class="word-counter-badge">WORD <span id="current-word-num">1</span> OF <span id="total-word-count">30</span></span>
+          </div>
+          <span class="typing-progress-text" id="typing-progress-pct">0% complete</span>
+        </div>
+
+        <!-- Monkeytype-Style Sentence Display: Continuous, natural flowing sentences -->
+        <div id="typing-words-container" class="typing-words-container">
+          <div id="typing-words-lines" class="typing-words-lines">
+            <!-- Sentence dynamically rendered in Monkeytype format -->
+            <div class="prompt-placeholder">generating race sentence...</div>
+          </div>
+        </div>
+
+        <!-- Hidden input to capture keystrokes on mobile/desktop with seamless focus -->
+        <input type="text" id="type-rush-input" class="type-input-stealth" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+        
+        <div id="typing-focus-prompt" class="focus-alert hidden">
+          ⚠️ Click here to refocus typing!
+        </div>
+      </div>
+
+    </main>
+
+    <!-- SCREEN 4: PODIUM & LEADERBOARD -->
+    <main id="screen-leaderboard" class="screen">
+      <!-- Confetti Canvas -->
+      <canvas id="confetti-canvas"></canvas>
+
+      <div class="results-container">
+        <div class="results-header">
+          <h1 class="results-title">🏁 RACE FINISHED 🏁</h1>
+          <p class="results-subtitle">The checkered flag has fallen! Final room standings:</p>
+        </div>
+
+        <!-- 1st, 2nd, 3rd Podium Stage -->
+        <div id="podium-stage" class="podium-stage">
+          <!-- Dynamically populated podium bars -->
+        </div>
+
+        <!-- Full Leaderboard Table -->
+        <div class="card leaderboard-card">
+          <table class="leaderboard-table">
+            <thead>
+              <tr>
+                <th>RANK</th>
+                <th>RACER</th>
+                <th>SPEED</th>
+                <th>ACCURACY</th>
+                <th>TIME</th>
+                <th>STATUS</th>
+              </tr>
+            </thead>
+            <tbody id="leaderboard-tbody">
+              <!-- Dynamically populated ranking rows -->
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Leaderboard Action Buttons -->
+        <div class="results-actions">
+          <button id="btn-leaderboard-leave" class="btn btn-outline">BACK TO LOBBY</button>
+          <button id="btn-leaderboard-rematch" class="btn btn-primary btn-glow">
+            <span>PLAY AGAIN / REMATCH</span> 🔄
+          </button>
+        </div>
+      </div>
+    </main>
+
+    <!-- COUNTDOWN MODAL OVERLAY (3, 2, 1, GO!) -->
+    <div id="countdown-overlay" class="countdown-overlay hidden">
+      <div class="countdown-content">
+        <div id="countdown-number" class="countdown-digit">3</div>
+        <div class="countdown-sub">GET READY ON YOUR KEYBOARDS!</div>
+      </div>
+    </div>
+
+    <!-- TOAST NOTIFICATIONS -->
+    <div id="toast-container" class="toast-container"></div>
+
+  </div>
+
+  <!-- Socket.IO Client -->
+  <script src="/socket.io/socket.io.js"></script>
+  <!-- Car Graphics & Sound FX -->
+  <script src="cars.js"></script>
+  <script src="audio.js"></script>
+  <!-- Core Game Logic -->
+  <script src="game.js"></script>
+</body>
+</html>
