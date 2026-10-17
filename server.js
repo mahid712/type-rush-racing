@@ -63,6 +63,7 @@ function cleanRoom(pin) {
   if (room.countdownTimer) clearTimeout(room.countdownTimer);
   if (room.graceTimer) clearTimeout(room.graceTimer);
   rooms.delete(pin);
+  console.log(`🧹 [ROOM CLOSED] PIN: [${pin}] (All racers left, memory freed)`);
 }
 
 // Format room state for clients
@@ -104,6 +105,8 @@ function finalizeRace(pin) {
   });
 
   const sortedLeaderboard = [...allPlayers].sort((a, b) => a.rank - b.rank);
+  const winner = sortedLeaderboard[0];
+  console.log(`🏆 [RACE FINISHED] PIN: [${pin}] | Winner: "${winner ? winner.name : 'Unknown'}" (${winner ? winner.wpm : 0} WPM in ${winner ? winner.finishTime : 0}s) | Total Racers: ${sortedLeaderboard.length}`);
 
   io.to(pin).emit('race_finished', {
     leaderboard: sortedLeaderboard,
@@ -113,6 +116,7 @@ function finalizeRace(pin) {
 
 io.on('connection', (socket) => {
   let currentPin = null;
+  console.log(`🔌 [SOCKET CONNECTED] Client: ${socket.id}`);
 
   // Create a new room with 4-digit PIN
   socket.on('create_room', ({ name, color, carStyle }) => {
@@ -150,6 +154,8 @@ io.on('connection', (socket) => {
     rooms.set(pin, room);
     socket.join(pin);
 
+    console.log(`🏁 [ROOM CREATED] PIN: [${pin}] | Host: "${newPlayer.name}" | Car: ${newPlayer.carStyle} | Color: ${newPlayer.color}`);
+
     socket.emit('room_created', {
       pin,
       playerId: socket.id,
@@ -163,14 +169,17 @@ io.on('connection', (socket) => {
     const room = rooms.get(sanitizedPin);
 
     if (!room) {
+      console.log(`⚠️  [JOIN FAILED] PIN: [${sanitizedPin}] - Room does not exist | User: "${name || 'Anonymous'}"`);
       return socket.emit('error_message', { message: `Room #${sanitizedPin} not found. Please check the 4-digit PIN!` });
     }
 
     if (Object.keys(room.players).length >= 8) {
+      console.log(`⚠️  [JOIN FAILED] PIN: [${sanitizedPin}] - Room is full (8/8) | User: "${name}"`);
       return socket.emit('error_message', { message: 'Room is full (max 8 racers).' });
     }
 
     if (room.status === 'racing') {
+      console.log(`⚠️  [JOIN FAILED] PIN: [${sanitizedPin}] - Race in progress | User: "${name}"`);
       return socket.emit('error_message', { message: 'A race is currently in progress. Please wait for the next round!' });
     }
 
@@ -193,6 +202,9 @@ io.on('connection', (socket) => {
 
     room.players[socket.id] = newPlayer;
     socket.join(sanitizedPin);
+
+    const totalCount = Object.keys(room.players).length;
+    console.log(`👤 [PLAYER JOINED] PIN: [${sanitizedPin}] | Player: "${newPlayer.name}" | Car: ${newPlayer.carStyle} | Total Racers: ${totalCount}/8`);
 
     socket.emit('room_joined', {
       pin: sanitizedPin,
@@ -219,6 +231,8 @@ io.on('connection', (socket) => {
     // Generate fresh procedural random prompt every single race (all lowercase words)!
     room.prompt = getRandomRacePrompt(35);
     room.status = 'countdown';
+
+    console.log(`🚦 [RACE COUNTDOWN] PIN: [${pin}] | Host: "${room.players[socket.id]?.name}" | Racers on grid: ${Object.keys(room.players).length}`);
 
     // Reset all player stats
     Object.values(room.players).forEach(p => {
@@ -251,6 +265,8 @@ io.on('connection', (socket) => {
         room.status = 'racing';
         room.startTime = Date.now();
 
+        console.log(`🏁 [RACE STARTED] PIN: [${pin}] | Prompt length: ${room.prompt.text.length} chars | All racers GO!`);
+
         io.to(pin).emit('race_start', {
           startTime: room.startTime,
           prompt: room.prompt,
@@ -281,6 +297,8 @@ io.on('connection', (socket) => {
       const elapsedSeconds = ((Date.now() - room.startTime) / 1000).toFixed(2);
       player.finishTime = elapsedSeconds;
       player.progress = 100;
+
+      console.log(`🥇 [RACER FINISHED] PIN: [${pin}] | Rank #${player.rank}: "${player.name}" | Speed: ${player.wpm} WPM | Time: ${player.finishTime}s | Acc: ${player.accuracy}%`);
 
       io.to(pin).emit('player_finished_single', {
         playerId: player.id,
@@ -322,6 +340,8 @@ io.on('connection', (socket) => {
       return socket.emit('error_message', { message: 'Only the host can initiate a rematch.' });
     }
 
+    console.log(`🔄 [REMATCH INITIATED] PIN: [${pin}] | Resetting room for next race`);
+
     if (room.graceTimer) {
       clearTimeout(room.graceTimer);
       room.graceTimer = null;
@@ -359,6 +379,7 @@ io.on('connection', (socket) => {
     delete room.players[socket.id];
 
     const remainingPlayers = Object.values(room.players);
+    console.log(`👋 [PLAYER LEFT] PIN: [${currentPin}] | Player: "${disconnectedPlayer ? disconnectedPlayer.name : 'Unknown'}" | Remaining Racers: ${remainingPlayers.length}`);
 
     if (remainingPlayers.length === 0) {
       cleanRoom(currentPin);
@@ -369,6 +390,7 @@ io.on('connection', (socket) => {
     if (room.hostId === socket.id) {
       room.hostId = remainingPlayers[0].id;
       remainingPlayers[0].isHost = true;
+      console.log(`👑 [NEW HOST] PIN: [${currentPin}] | Assigned to: "${remainingPlayers[0].name}"`);
     }
 
     // If currently racing and all remaining racers finished, finalize race
