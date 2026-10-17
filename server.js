@@ -31,13 +31,18 @@ app.use(express.static(path.join(__dirname, 'public')));
 const RENDER_EXTERNAL_URL = process.env.RENDER_EXTERNAL_URL;
 if (RENDER_EXTERNAL_URL) {
   const pingInterval = 10 * 60 * 1000; // Ping every 10 minutes (Render sleeps after 15 min)
-  setInterval(() => {
-    const pingUrl = `${RENDER_EXTERNAL_URL}/health`;
-    http.get(pingUrl, (res) => {
-      // Keep alive heartbeat acknowledged
-    }).on('error', (err) => {
-      console.warn('Heartbeat ping error:', err.message);
-    });
+  setInterval(async () => {
+    try {
+      const pingUrl = `${RENDER_EXTERNAL_URL}/health`;
+      if (typeof fetch === 'function') {
+        await fetch(pingUrl);
+      } else {
+        const client = pingUrl.startsWith('https') ? require('https') : require('http');
+        client.get(pingUrl, () => {}).on('error', () => {});
+      }
+    } catch (err) {
+      // Quietly ignore heartbeat network errors
+    }
   }, pingInterval);
   console.log(`💓 Auto-heartbeat enabled for Render: ${RENDER_EXTERNAL_URL} (every 10m)`);
 }
