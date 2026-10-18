@@ -1061,26 +1061,6 @@ body {
   border-radius: 4px;
 }
 
-/* FINAL STRETCH ALERT BANNER */
-.finish-alert-banner {
-  background: linear-gradient(90deg, #ff3366 0%, #ff8800 50%, #ff3366 100%);
-  color: #fff;
-  text-align: center;
-  padding: 10px;
-  border-radius: 10px;
-  font-weight: 700;
-  font-size: 1.15rem;
-  letter-spacing: 2px;
-  margin-bottom: 14px;
-  box-shadow: 0 0 25px var(--accent-glow);
-  animation: pulseAlert 0.8s infinite alternate;
-}
-
-@keyframes pulseAlert {
-  0% { transform: scale(0.99); opacity: 0.85; }
-  100% { transform: scale(1.01); opacity: 1; }
-}
-
 /* REALISTIC RACE TRACK STYLING & CURBS */
 .track-distance-board {
   display: flex;

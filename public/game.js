@@ -81,7 +81,6 @@
   const hudGraceSeconds = document.getElementById('hud-grace-seconds');
   const raceTrackLanes = document.getElementById('race-track-lanes');
   const finishLineBanner = document.getElementById('finish-line-banner');
-  const finishAlertBanner = document.getElementById('finish-alert-banner');
   const radarDotsContainer = document.getElementById('radar-dots-container');
   const typingWordsContainer = document.getElementById('typing-words-container');
   const typingWordsLines = document.getElementById('typing-words-lines');
@@ -671,9 +670,6 @@
     if (finishLineBanner) {
       finishLineBanner.className = 'finish-line-banner hidden-line';
     }
-    if (finishAlertBanner) {
-      finishAlertBanner.classList.add('hidden');
-    }
 
     renderWordLines();
     renderRaceLanes();
@@ -875,7 +871,6 @@
       if (finishLineBanner && finishLineBanner.classList.contains('hidden-line')) {
         finishLineBanner.classList.remove('hidden-line');
         finishLineBanner.classList.add('visible-line');
-        if (finishAlertBanner) finishAlertBanner.classList.remove('hidden');
         window.soundFX.playNitro();
       }
     } else {
@@ -883,7 +878,6 @@
         finishLineBanner.classList.add('hidden-line');
         finishLineBanner.classList.remove('visible-line');
       }
-      if (finishAlertBanner) finishAlertBanner.classList.add('hidden');
     }
 
     // Update Overhead Race Radar
