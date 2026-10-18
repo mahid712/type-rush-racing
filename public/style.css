@@ -1584,16 +1584,16 @@ body {
 .typing-words-container {
   position: relative;
   background: rgba(10, 14, 23, 0.96);
-  border: 2px solid rgba(0, 242, 254, 0.35);
-  border-radius: 12px;
-  padding: 0 30px;
-  height: 60px;
-  min-height: 60px;
-  max-height: 60px;
+  border: 2px solid rgba(0, 242, 254, 0.45);
+  border-radius: 14px;
+  padding: 0 36px;
+  height: 82px;
+  min-height: 82px;
+  max-height: 82px;
   display: flex;
   align-items: center;
   overflow: hidden;
-  box-shadow: inset 0 0 25px rgba(0, 0, 0, 0.88), 0 0 16px rgba(0, 242, 254, 0.1);
+  box-shadow: inset 0 0 30px rgba(0, 0, 0, 0.92), 0 0 20px rgba(0, 242, 254, 0.16);
   cursor: text;
   /* Smooth sliding ribbon fade masks on left and right edges */
   mask-image: linear-gradient(to right, transparent 0%, black 50px, black calc(100% - 50px), transparent 100%);
@@ -1605,8 +1605,10 @@ body {
   align-items: center;
   white-space: nowrap;
   font-family: 'JetBrains Mono', 'Roboto Mono', 'Fira Code', 'Courier New', monospace;
-  font-size: 1.6rem;
-  line-height: 1;
+  font-size: 2.35rem;
+  font-weight: 600;
+  line-height: 1.1;
+  letter-spacing: 0.02em;
   user-select: none;
   transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1);
   will-change: transform;
@@ -1617,8 +1619,8 @@ body {
   display: inline-flex;
   align-items: center;
   white-space: nowrap;
-  letter-spacing: 0.04em;
-  padding: 4px 6px;
+  letter-spacing: 0.03em;
+  padding: 4px 8px;
   border-radius: 8px;
   position: relative;
   transition: all 0.2s ease-out;
@@ -1627,38 +1629,45 @@ body {
 /* Space gap between words */
 .word-spacer {
   display: inline-block;
-  width: 18px;
+  width: 24px;
 }
 
 /* Completed words: smoothly dim as they slide away to the left */
 .word.word-completed {
-  opacity: 0.45;
+  opacity: 0.4;
   filter: blur(0.2px);
 }
 
 /* Active Word in Focus Spot */
 .word.word-current {
-  background: rgba(0, 242, 254, 0.08);
-  border-bottom: 2.5px solid rgba(0, 242, 254, 0.65);
-  border-radius: 6px;
+  background: rgba(0, 242, 254, 0.12);
+  border-bottom: 3.5px solid rgba(0, 242, 254, 0.85);
+  border-radius: 8px;
+}
+
+/* Upcoming characters in the active word are bright white for immediate focus */
+.word.word-current .char.pending {
+  color: #f8fafc;
+  font-weight: 700;
 }
 
 /* Upcoming words: crisp and readable so you can read ahead easily */
 .word.word-pending {
-  opacity: 0.85;
+  opacity: 0.92;
 }
 
 /* Individual Characters in Monkeytype Signature Style */
 .char {
   position: relative;
-  color: #646669; /* Subdued upcoming text */
+  color: #94a3b8; /* Crisp, high-contrast slate text for easy reading */
   transition: color 0.08s ease, text-shadow 0.08s ease;
 }
 
 /* Correct Character Typed (Vibrant High-Contrast Neon Cyan) */
 .char.correct {
   color: #00f2fe;
-  text-shadow: 0 0 12px rgba(0, 242, 254, 0.75);
+  font-weight: 700;
+  text-shadow: 0 0 14px rgba(0, 242, 254, 0.85);
 }
 
 /* Active Character with Smooth Monkeytype Vertical Caret */
@@ -1666,12 +1675,12 @@ body {
   content: '';
   position: absolute;
   left: -2px;
-  top: 10%;
-  height: 80%;
-  width: 3.5px;
+  top: 6%;
+  height: 88%;
+  width: 4px;
   background: var(--primary);
   border-radius: 2px;
-  box-shadow: 0 0 12px var(--primary-glow);
+  box-shadow: 0 0 14px var(--primary-glow);
   animation: monkeyCaretBlink 0.85s infinite ease-in-out;
 }
 
@@ -1680,26 +1689,28 @@ body {
   content: '';
   position: absolute;
   right: -3px;
-  top: 10%;
-  height: 80%;
-  width: 3.5px;
+  top: 6%;
+  height: 88%;
+  width: 4px;
   background: var(--primary);
   border-radius: 2px;
-  box-shadow: 0 0 12px var(--primary-glow);
+  box-shadow: 0 0 14px var(--primary-glow);
   animation: monkeyCaretBlink 0.85s infinite ease-in-out;
 }
 
 @keyframes monkeyCaretBlink {
-  0%, 100% { opacity: 1; filter: drop-shadow(0 0 6px var(--primary)); }
+  0%, 100% { opacity: 1; filter: drop-shadow(0 0 8px var(--primary)); }
   50% { opacity: 0.2; filter: none; }
 }
 
 /* Error Character in Monkeytype (Vivid Red with highlight) */
 .char.error {
-  color: #ff3366 !important;
-  background: rgba(255, 51, 102, 0.28);
+  color: #ff2a5f !important;
+  font-weight: 700;
+  background: rgba(255, 42, 95, 0.28);
   border-radius: 4px;
-  text-shadow: 0 0 10px rgba(255, 51, 102, 0.85);
+  padding: 0 2px;
+  text-shadow: 0 0 12px rgba(255, 42, 95, 0.9);
   animation: shake 0.2s ease-in-out;
 }
 
