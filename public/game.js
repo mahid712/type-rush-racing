@@ -789,6 +789,14 @@
     if (!state.room) return;
     raceTrackLanes.innerHTML = '';
 
+    const numPlayers = state.room.players.length;
+    raceTrackLanes.dataset.players = numPlayers;
+    raceTrackLanes.className = `race-track-lanes ${
+      numPlayers <= 2 ? 'lanes-sparse' :
+      numPlayers <= 4 ? 'lanes-medium' :
+      numPlayers <= 6 ? 'lanes-compact' : 'lanes-dense'
+    }`;
+
     state.room.players.forEach((p, idx) => {
       const isYou = p.id === state.myPlayerId;
       const carName = CarGraphics.getStyleName(p.carStyle);
@@ -821,8 +829,9 @@
   // --- Live Track & Cars Position Updating ---
   function updateTrackCars(players) {
     const trackWidth = raceTrackLanes.clientWidth || 1100;
-    const carWidth = 155;
-    const finishOffset = 90;
+    const firstCar = raceTrackLanes.querySelector('.racer-car-wrapper');
+    const carWidth = firstCar && firstCar.offsetWidth > 40 ? firstCar.offsetWidth : (players.length >= 5 ? 100 : 145);
+    const finishOffset = players.length >= 5 ? 65 : 85;
     const maxTravel = Math.max(10, trackWidth - carWidth - finishOffset);
 
     // Compute live positions for all racers
